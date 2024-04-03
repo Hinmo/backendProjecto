@@ -2,7 +2,7 @@ import { Model, Schema, Types, model } from "mongoose";
 import { InteractionsInterface } from "../interfaces/interaccion.interface";
 
 const InteractionsSchema = new Schema<InteractionsInterface>({
-  //aqui se coloca la definicion de mis datos:
+  //aqui se coloca la definicion de nuestros datos:
   descriptionInteraction: { type: String, required: true },
   actionInteraction: { type: String, required: true },
   userCreate: {
