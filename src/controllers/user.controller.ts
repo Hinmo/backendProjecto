@@ -137,20 +137,36 @@ export const updateUser = async (req: CustomRequest, res: Response) => {
     const id = req.params.id;
     const { body } = req;
 
-    // Actualizar el campo UpdateAt
+    // Verificar si se está actualizando la contraseña
+    if (body.hasOwnProperty('password')) {
+      // Encriptar la nueva contraseña
+      const salt = bcrypt.genSaltSync(10);
+      const nuevoPass = bcrypt.hashSync(body.password, salt);
+      
+      // Actualizar el campo UpdateAt y la contraseña encriptada
+      const update = { password: nuevoPass, updateAt: new Date() };
+      const userActualizo = await UserModel.findByIdAndUpdate(id, update, {
+        new: true,
+      });
+      return res.json({
+        ok: true,
+        usuario: userActualizo,
+      });
+    }
+
+    // Si no se está actualizando la contraseña, se actualizan todos los campos
     const update = { ...body, updateAt: new Date() };
-    // El update del usuario - Actualizar el usuario
     const userActualizo = await UserModel.findByIdAndUpdate(id, update, {
       new: true,
     });
-    res.json({
+    return res.json({
       ok: true,
       usuario: userActualizo,
     });
   } catch (err) {
-    res.status(400).json({
+    return res.status(400).json({
       ok: false,
-      msg: "Error consultar los usuarios",
+      msg: "Error al actualizar el usuario",
     });
   }
 };
