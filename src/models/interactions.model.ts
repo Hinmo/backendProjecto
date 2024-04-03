@@ -28,4 +28,4 @@ const InteractionsSchema = new Schema<InteractionsInterface>({
 const InteractionModel: Model<InteractionsInterface> =
   model<InteractionsInterface>("interacciones", InteractionsSchema);
 
-export default InteractionModel;
+export default InteractionModel; //test text
