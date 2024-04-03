@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import UserModel from "../models/user.model";
 import bcrypt from "bcryptjs";
 import generateJWT from "../helpers/jwt";
-import validateJWT, { CustomRequest } from "../middlewares/validate-jwt";
+import { CustomRequest } from "../middlewares/validate-jwt";
 
 export const login = async (req: Request, res: Response) => {
   const { login: loginUser, password } = req.body;
