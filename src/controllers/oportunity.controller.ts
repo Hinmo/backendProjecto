@@ -255,25 +255,44 @@ export const getSinGestorOportuniy = async (
 
 export const getOportunity = async (req: CustomRequest, res: Response) => {
   try {
-    // devuelve todo el listado de productos con la información que el usuario creó
+    const userId = req._id;
 
-    const oportunidad = await OportunityModel.find()
+    // Consultar el usuario para obtener su rol
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ ok: false, msg: 'Usuario no encontrado.' });
+    }
+
+    const role = user.rol;
+
+    let oportunidadQuery = OportunityModel.find();
+
+    // Restringir acceso según el rol del usuario
+    switch (role) {
+      case ROLES.GERENTE:
+      case ROLES.SUPERVISOR:
+        // Gerentes y supervisores pueden ver todas las oportunidades
+        break;
+      case ROLES.ASESOR:
+        // Asesores solo pueden ver las oportunidades donde sean el gestor
+        oportunidadQuery = oportunidadQuery.where('userGestor').equals(userId);
+        break;
+      default:
+        // Otros roles no tienen acceso
+        return res.status(403).json({ ok: false, message: 'No tienes permiso para acceder a esta información.' });
+    }
+
+    const oportunidad = await oportunidadQuery
       .populate("userCreate", "nombre")
       .populate("userGestor", "nombre")
       .populate("userCliente", "nombre");
-    /* for (const opor of oportunidad) {
-      const interacciones = await OportunityModel.find({
-        refOportunity: opor._id,
-      })
-      oportunidad(interacciones.length)
-    } */
-    //TODO: pendiente enviar la cantidad de interacciones que esta tenga
+
     res.json({
       ok: true,
       oportunidad,
     });
   } catch (error) {
-    res.json({
+    res.status(500).json({
       ok: false,
       error,
     });
