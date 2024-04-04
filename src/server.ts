@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.route";
 import interactionRoutes from "./routes/interaction.route";
 import oportunityRoutes from "./routes/oportunity.route";
 import serviceRoutes from "./routes/service.route";
+import contactoRoutes from "./routes/contacto.route"
 import cors from "cors";
 
 class Server {
@@ -16,6 +17,7 @@ class Server {
     interaction: "/api/v1/interaccion",
     oportunity: "/api/v1/oportunidad",
     service: "/api/v1/service",
+    contacto: "/api/v1/contacto",
   };
 
   constructor() {
@@ -52,6 +54,7 @@ class Server {
     this.app.use(this.apiPaths.interaction, interactionRoutes);
     this.app.use(this.apiPaths.oportunity, oportunityRoutes);
     this.app.use(this.apiPaths.service, serviceRoutes);
+    this.app.use(this.apiPaths.contacto, contactoRoutes);
   }
 
   listen(): void {

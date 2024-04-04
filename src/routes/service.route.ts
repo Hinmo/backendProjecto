@@ -1,8 +1,6 @@
 // esta ruta toma el path de cliente (Path: /api/v1/cliente)
 
 import { Router } from "express";
-import { check } from "express-validator";
-import { validateFields } from "../middlewares/validate-fields";
 import validateJWT from "../middlewares/validate-jwt";
 import { createService, getService } from "../controllers/service.controller";
 

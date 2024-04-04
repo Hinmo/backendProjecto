@@ -1,3 +1,5 @@
+import { ContactoFormInterface } from "../models/contacto.model";
+
 const nodemailer = require("nodemailer");
 // crea un transportador que conecta y hace el envio del mail
 const transporter = nodemailer.createTransport({
@@ -24,4 +26,22 @@ export const sendMail = async (nomOportunidad: string) => {
   });
 
   console.log("Message sent: %s", info.messageId);
+};
+
+export const enviarCorreoContacto = async (formulario: ContactoFormInterface) => {
+  try {
+    // Configurar el correo electrónico
+    const info = await transporter.sendMail({
+      from: '"Mario Jurado" <jorjuroba@hotmail.com>',
+      to: "jorjuroba@gmail.com",
+      subject: "Nuevo Formulario de Contacto Recibido",
+      text: `Nuevo formulario de contacto recibido:\n\nNombre: ${formulario.nombre}\nCorreo electrónico: ${formulario.email}\nMensaje: ${formulario.mensaje}`,
+      html: `<p>Nuevo formulario de contacto recibido:</p><ul><li><b>Nombre:</b> ${formulario.nombre}</li><li><b>Correo electrónico:</b> ${formulario.email}</li><li><b>Mensaje:</b> ${formulario.mensaje}</li></ul>`
+    });
+
+    console.log("Correo electrónico enviado: %s", info.messageId);
+  } catch (error) {
+    console.error("Error al enviar el correo electrónico:", error);
+    throw error;
+  }
 };
