@@ -12,11 +12,9 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Definir y exportar la función main
-export const sendMail = async (nomOportunidad: string) => {
-  // Configuración del transporte de nodemailer...
 
-  // send mail with defined transport object
+export const sendMail = async (nomOportunidad: string) => {
+
   const info = await transporter.sendMail({
     from: '"Mario Jurado" <jorjuroba@hotmail.com>',
     to: "jorjuroba@gmail.com",

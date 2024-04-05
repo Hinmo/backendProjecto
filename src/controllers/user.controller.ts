@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import UserModel from "../models/user.model";
 import bcrypt from "bcryptjs";
 import { CustomRequest } from "../middlewares/validate-jwt";
+import { ROLES } from "../core/enum/roles.enum";
 
 export const createUser = async (req: Request, res: Response) => {
   const { body } = req;
@@ -133,32 +134,70 @@ export const getaUserRol = async (req: CustomRequest, res: Response) => {
 
 export const updateUser = async (req: CustomRequest, res: Response) => {
   try {
-    // id del usuario
+    // Obtener el id del usuario del token
+    const userId = req._id; 
+
+    // Obtener el id del usuario a actualizar
     const id = req.params.id;
     const { body } = req;
 
-    // Verificar si se está actualizando la contraseña
-    if (body.hasOwnProperty('password')) {
-      // Encriptar la nueva contraseña
-      const salt = bcrypt.genSaltSync(10);
-      const nuevoPass = bcrypt.hashSync(body.password, salt);
-      
-      // Actualizar el campo UpdateAt y la contraseña encriptada
-      const update = { password: nuevoPass, updateAt: new Date() };
-      const userActualizo = await UserModel.findByIdAndUpdate(id, update, {
-        new: true,
-      });
-      return res.json({
-        ok: true,
-        usuario: userActualizo,
+    const userSolicitante = await UserModel.findById(userId);
+    if (!userSolicitante) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Usuario no encontrado",
       });
     }
 
-    // Si no se está actualizando la contraseña, se actualizan todos los campos
+    const userObjetivo = await UserModel.findById(id);
+    if (!userObjetivo) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Usuario a actualizar no encontrado",
+      });
+    }
+
+    if (userSolicitante.rol === ROLES.GERENTE) {
+      if (userObjetivo.rol === ROLES.GERENTE) {
+        const otrosGerentes = await UserModel.countDocuments({ rol: ROLES.GERENTE, _id: { $ne: id } });
+        if (otrosGerentes === 0) {
+          return res.status(403).json({
+            ok: false,
+            msg: "No se puede modificar el perfil del único gerente existente",
+          });
+        }
+      }
+    } else if (userSolicitante.rol === ROLES.SUPERVISOR) {
+      if ([ROLES.SUPERVISOR, ROLES.CLIENTE, ROLES.ASESOR].includes(userObjetivo.rol)) {
+        if (body.rol && body.rol === ROLES.GERENTE) {
+          return res.status(403).json({
+            ok: false,
+            msg: "No tiene permiso para promover a este usuario a gerente",
+          });
+        }
+      }
+      // Permitir que el supervisor modifique supervisor, asesor y cliente
+      if (![ROLES.SUPERVISOR, ROLES.ASESOR, ROLES.CLIENTE].includes(userObjetivo.rol)) {
+        return res.status(403).json({
+          ok: false,
+          msg: "No tiene permiso para modificar a este usuario",
+        });
+      }
+    } else if (userId === id) {
+      if (body.rol && body.rol !== userObjetivo.rol) {
+        return res.status(403).json({
+          ok: false,
+          msg: "No tiene permiso para modificar su propio rol",
+        });
+      }
+    }
+
+    // Actualizar el usuario
     const update = { ...body, updateAt: new Date() };
     const userActualizo = await UserModel.findByIdAndUpdate(id, update, {
       new: true,
     });
+
     return res.json({
       ok: true,
       usuario: userActualizo,
@@ -170,6 +209,7 @@ export const updateUser = async (req: CustomRequest, res: Response) => {
     });
   }
 };
+
 
 export const updateStateUser = async (req: CustomRequest, res: Response) => {
   try {
